@@ -25,9 +25,14 @@ export function BlogPosts() {
               <p className="text-neutral-600 dark:text-neutral-400 w-[100px] tabular-nums">
                 {formatDate(post.metadata.publishedAt, false)}
               </p>
-              <p className="text-xl text-neutral-600 dark:text-neutral-300 tracking-tight hover:text-neutral-800 dark:hover:text-neutral-100">
-                {post.metadata.title}
-              </p>
+              <div>
+                <p className="text-xl text-neutral-600 dark:text-neutral-300 tracking-tight hover:text-neutral-800 dark:hover:text-neutral-100">
+                  {post.metadata.title}
+                </p>
+                <p className="text-neutral-600 dark:text-neutral-400 tabular-nums">
+                  {post.metadata.summary}
+                </p>
+              </div>
             </div>
           </Link>
         ))}
