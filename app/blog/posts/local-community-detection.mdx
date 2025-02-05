@@ -1,23 +1,23 @@
 ---
 title: 'Local Community Detection'
-publishedAt: '2024-04-09'
+publishedAt: '2025-02-05'
 summary: 'Contributing a new class of algorithm to NetworkX'
 ---
 
-Network graphs often allow relationships in data to be represented more naturally. In a graph, each node represents an object, and edges describe how these objects are related—like friendships in social networks or interactions between proteins in biological systems. Finding groups of closely related nodes is essential in understanding these relationships, which is why community detection has become such an important tool. You can imagine finding [friendship groups](https://arxiv.org/abs/1403.3795) or [groups of interacting proteins](https://bmcsystbiol.biomedcentral.com/articles/10.1186/1752-0509-3-112).
+Network graphs often allow relationships in data to be represented more naturally. In a graph, each node represents an object, and edges describe how these objects are related—like friendships in social networks or interactions between proteins. Finding groups of closely related nodes is essential in understanding these relationships, which is why community detection has become such an important tool. You can imagine finding [friendship groups](https://arxiv.org/abs/1403.3795) or [groups of interacting proteins](https://bmcsystbiol.biomedcentral.com/articles/10.1186/1752-0509-3-112).
 
 ## From Global to Local
 
-Most community detection algorithms work globally across the whole network, putting every node into a community. ([Learn more here](https://cs.stanford.edu/people/jure/pubs/mappr-kdd17.pdf)). While this works well with smaller static graphs, it becomes challenging when the graphs get large or very dynamic. The processing time and memory requirements can be significant, making finding communities globally infeasible or expensive.
+Most community detection algorithms work globally across the whole network, putting every node into a [community](https://cs.stanford.edu/people/jure/pubs/mappr-kdd17.pdf). While this works well with smaller static graphs, it becomes challenging when the graphs get large or very dynamic. The processing time and memory requirements can be significant, making finding communities globally infeasible or expensive.
 
 <LCDGraph local={false}/>
 
-However, sometimes we are focused on a single node. For example, when finding which social circle one person belongs to, there is no need to find every community in the graph. Instead, we can just look at the local graph around the node, reducing the complexity significantly. This is where Local Community Detection (LCD) algorithms come into play. They start with a chosen node and incrementally add nodes that are most connected until a predefined cut-off is reached. The processing time can be so quick that it is possible to run this in real-time as an API, even on very large dynamic graphs.
+However, sometimes we are focused on a single node. For example, when finding which social circle a person belongs to, there is no need to find every community in the graph. Instead, we can just look at the local graph around the node, reducing the complexity significantly. This is where Local Community Detection (LCD) algorithms come into play. They start with a chosen node and incrementally add nodes that are most connected until a predefined cut-off is reached. The processing time can be so quick that it is possible to run this in real-time as an API, even on very large dynamic graphs.
 
 <LCDGraph/>
 
 
-Aaron Clauset ([see paper](https://arxiv.org/pdf/physics/0503036)) first proposed an LCD algorithm in 2005. Similarly to many global algorithms, it relies on a modified version of modularity. Modularity compares how many edges exist between a group of nodes, compared to how many you would expect if they were all randomly distributed. If there are more edges than you would expect, it suggests a community. Clauset’s algorithm expands the local community while the modularity gain is positive and stops once the benefit of adding new nodes reduces.
+[Aaron Clauset](https://arxiv.org/pdf/physics/0503036) first proposed an LCD algorithm in 2005. Similarly to many global algorithms, it relies on a modified version of modularity. Modularity compares how many edges exist between a group of nodes, compared to how many you would expect if they were all randomly distributed. If there are more edges than you would expect, it suggests a community. Clauset’s algorithm expands the local community while the modularity gain is positive and stops once the benefit of adding new nodes reduces.
 
 ## Use Cases
 

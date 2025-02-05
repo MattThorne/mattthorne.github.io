@@ -79,7 +79,7 @@ export default function LCDGraph({ local = true }: LCDGraphProps) {
 
     const rawData = {
         0: [0.03684215, 0.00153656],
-        1: [0.19243877, 0.39981037],
+        1: [0.29243877, 0.39981037],
         3: [0.47859452, 0.36660082],
         4: [-0.34221492, 0.17850031],
         5: [-0.62044468, 0.03449326],
@@ -156,7 +156,7 @@ export default function LCDGraph({ local = true }: LCDGraphProps) {
 
                     return (
                         <mesh key={id} position={node.position}>
-                            <sphereGeometry args={[isInCommunity(id) ? 0.3 : 0.1, 16, 16]} />
+                            <sphereGeometry args={[isInCommunity(id) ? 0.3 : 0.15, 16, 16]} />
                             <meshBasicMaterial color={color} />
                         </mesh>
                     )

@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
-import { formatDate, getWorkProjects } from 'app/work/utils'
+import { formatDate, getWorkJobs } from 'app/work/utils'
 import { baseUrl } from 'app/sitemap'
 
 export async function generateStaticParams() {
-    let projects = getWorkProjects()
+    let projects = getWorkJobs()
 
     return projects.map((project) => ({
         slug: project.slug,
@@ -12,7 +12,7 @@ export async function generateStaticParams() {
 }
 
 export function generateMetadata({ params }) {
-    let project = getWorkProjects().find((project) => project.slug === params.slug)
+    let project = getWorkJobs().find((project) => project.slug === params.slug)
     if (!project) {
         return
     }
@@ -52,7 +52,7 @@ export function generateMetadata({ params }) {
 }
 
 export default function Blog({ params }) {
-    let project = getWorkProjects().find((project) => project.slug === params.slug)
+    let project = getWorkJobs().find((project) => project.slug === params.slug)
 
     if (!project) {
         notFound()
