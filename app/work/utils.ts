@@ -8,6 +8,7 @@ type Metadata = {
   skills: string
   image?: string
   order: string
+  url?: string
 }
 
 function parseFrontmatter(fileContent: string) {

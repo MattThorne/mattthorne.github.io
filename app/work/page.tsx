@@ -4,9 +4,10 @@ import { Jobs } from 'app/components/jobs'
 import { Opensource } from 'app/components/opensource'
 import { SideProjects } from 'app/components/projects'
 
+// TODO sort out OG image for work page
 export const metadata = {
   title: 'Work',
-  description: 'See  my recent work.',
+  description: 'See my recent work.',
 }
 
 export default function Page() {
