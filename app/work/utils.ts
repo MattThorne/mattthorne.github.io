@@ -8,6 +8,7 @@ type Metadata = {
   skills: string
   image?: string
   order: string
+  url?: string
 }
 
 function parseFrontmatter(fileContent: string) {
@@ -51,7 +52,20 @@ function getMDXData(dir) {
   })
 }
 
-export function getWorkProjects() {
+export function getWorkJobs() {
+  return getMDXData(path.join(process.cwd(), 'app', 'work', 'jobs'))
+}
+
+export function getWorkFreelance() {
+  return getMDXData(path.join(process.cwd(), 'app', 'work', 'freelance'))
+}
+export function getWorkOpensource() {
+  return getMDXData(path.join(process.cwd(), 'app', 'work', 'opensource'))
+}
+export function getWorkEducation() {
+  return getMDXData(path.join(process.cwd(), 'app', 'work', 'education'))
+}
+export function getWorkSideProjects() {
   return getMDXData(path.join(process.cwd(), 'app', 'work', 'projects'))
 }
 

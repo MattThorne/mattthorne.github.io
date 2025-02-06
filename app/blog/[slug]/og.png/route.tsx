@@ -31,6 +31,9 @@ export function GET(req: Request, { params }: { params: { slug: string } }) {
                         {title}
                     </h1>
                     <h2 tw="text-2xl tracking-tight text-left mt-0">
+                        {description}
+                    </h2>
+                    <h2 tw="text-2xl tracking-tight text-left mt-0">
                         Matt Thorne
                     </h2>
                 </div>

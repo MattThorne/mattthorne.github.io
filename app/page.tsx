@@ -15,12 +15,12 @@ export default function Page() {
       {/* <p className="mt-8 mb-4">
         {`I'm a Software Engineer and Certified AWS expert`}
       </p> */}
-      {/* <div className="my-8">
+      <div className="my-8">
         <h2 className="mb-2 text-xl font-semibold tracking-tighter">
-          blog
+          Blog
         </h2>
         <BlogPosts />
-      </div> */}
+      </div>
     </section>
   )
 }
