@@ -51,11 +51,11 @@ export default function PPIPruningHigh() {
     const strongColor = isDarkMode ? 'white' : 'black';
 
     return (
-        <div style={{ position: 'relative', width: '100%', margin: 0, padding: 0 }}>
-            <div style={{ position: 'absolute', top: '10px', left: '0px', color: color }}>
+        <div style={{ position: 'relative', width: '100%' }}>
+            <div style={{ position: 'absolute', top: '30px', left: '0px', color: color }}>
                 High Scoring Pair
             </div>
-            <Canvas style={{ height: '300px', display: 'block' }}>
+            <Canvas style={{ height: '300px' }}>
                 <ambientLight intensity={Math.PI / 2} />
                 <spotLight position={[40, 40, 410]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
                 <pointLight position={[-40, -40, -40]} decay={0} intensity={Math.PI} />
