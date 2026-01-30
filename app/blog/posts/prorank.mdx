@@ -1,0 +1,85 @@
+---
+title: 'Using Pagerank to Detect Protein Complexes'
+publishedAt: '2026-01-30'
+summary: 'Learning about PPI’s  and recreating the prorank algorithm'
+---
+
+Every paper I read about community detection talks about the applications in protein protein interactions (PPI), but coming from the computing side I didn’t know why it was useful. This post collects together what I learnt from implementing a PPI paper. I picked a paper from 2012 because it was the most recent paper I found that I could slightly understand with such little background knowledge.
+
+## Why are protein interactions interesting?
+
+There is no part of our bodies that work without proteins. There are at least 100,000 different types of proteins in our body, all in a constant mess of interactions, determining how our bodies work. The root cause of all disease is these interactions being slightly off.
+
+Inside this network of interactions their are clusters of highly interacting proteins. If one protein is known to cause a disease, it is possible the proteins in highly interacts with are likely also linked to the disease. Understanding these interactions and clusters gives us insight into disease, the proteins that cause the disease and the underlying genes which make these proteins. With better understanding we can improve methods of disease detection and of drug discovery. 
+
+For example [this Nature paper](https://www.nature.com/articles/s41421-020-0153-3) used the PPI network for known human proteins to help identify potential drugs for treating Covid-19.
+
+## Identifying Proteins
+
+To build networks of protein interactions we need to be able to identify individual proteins.
+
+**Western blotting** uses modified antibodies to identify if specific proteins are present. When these antibodies bind to the proteins of interest they become easily identifiable, for example by emitting light. Prior to adding the antibodies electrophoesis is often used to sort proteins by size, by giving them a charge and placing them in an electric field. This increases confidence in which proteins have been found. 
+
+**Mass Spectrometry** uses the mass of the proteins to identify them. First the proteins are split into parts called peptides. The peptides are then given a charge and seperated based on their mass-to-charge ratio. This results in a spectra which is compared to known values to identify the peptides present. Once the peptides are know we can reverse engineer which proteins where originally present. It is a bit like having lots of books, chopping them up into sentences and mixing them all together. From analysing the sentences against the original books we can figure out which books we have.
+
+## Identifying Protein Interactions
+
+Once individual proteins can be identified we next need to find which ones interact with each other. These techniques feel almost absurd. The fact that they work is somewhat miraculous. It feels so imprecise and up to chance, yet it provably works. We mix chemicals in a tube and we can ‘update’ the DNA of a cell.
+
+**Yeast 2 hybrid** allows us to detect protein interactions inside yeast cells. The key is using a protein which activates a gene, know as a transcription factor. To identify if protein A interacts with protein B the transcription factor protein is split in two. Half is attached to protein A, the other half to protein B. If the proteins A and B interact the two halves of the transcription factor protein recombine. The now complete transcription factor will then activate a specific gene. By monitoring if this gene becomes active we can determine if proteins A and B interact.
+
+**Tandem Affinity Purification (TAP)** isolates a protein and proteins it is interacting with. The gene which produces the protein of interest is genetically modified to have a tag, this means when the protein is produced it has an extra part on the end of it with two ‘handles’. ‘Beads’ are used to pull on one of these handles. However, because proteins are long chains any other proteins it is interacting with will also be pulled. A bit like trying to pick up a single piece of cooked spaghetti. A second set of beads is used to pull on the second handle to further purify remaining proteins. Mass spectrometry is then used to identify which proteins are left. Proteins that are left likely interact closely.
+
+
+
+## Prorank
+[Prorank](https://pubmed.ncbi.nlm.nih.gov/22685080/) is a PPI clustering algorithm that utilises Googles Pagerank algorithm to rank the importance of each protein in a PPI network. It then uses a greedy clustering method to cluster the proteins starting with the most important proteins. I found the paper by following a chain of references starting from a recent [PPI clustering survey](https://ieeexplore.ieee.org/document/9663007). 
+
+### The Datasets
+Prorank uses 3 different datasets to generate the PPI graph and then validate the clusters produce by the algorithm.
+
+**[BioGrid](https://thebiogrid.org)** is an interaction repository manually curated by experts. It has collected data from 10,000’s of publications. It collects both genetic and protein interactions. Prorank uses this dataset as the starting PPI network.
+
+**[Fasta](https://www.uniprot.org/help/downloads)** is a dataset of protein sequences. That is the list of amino acids that make up a protein. Prorank uses these sequences to create a similarity matrix between proteins, allowing us the proteins to be ranked in order of importance.
+
+ **MIPS** is a manually curated catalog of protein clusters. Prorank uses this as a reference set to evaluate the effectiveness of their clustering algorithm. However, I was unable to find the original MIPS dataset online, so for my implementation I have used  **[CYC2008](https://academic.oup.com/nar/article/37/3/825/1073031?login=false)**. CYC2008 was intended to supersede MIPS and I found several recent papers refer to it as the gold standard, so I felt it would be a good replacement.
+ 
+
+### The Algorithm
+The prorank algorithm is split into 5 steps. I won't expand much on the details of the algorithm as my aim for this was to learn about applications in PPI. My python implementation can be found on [GitHub](https://github.com/MattThorne/implementations/tree/master/graphs/prorank).
+
+##### 1. Pruning
+First the PPI graph is pruned by weighting the edges and removing edges that fall below a threshold. Each edge on the graph is weighted by comparing the two nodes it connects. The number of neighbours that the 2 nodes share is compared to the total number of neighbours the nodes have. This gives an indication of how likely the interaction the edge represents is to exist. For example if 2 proteins interact with all the same other proteins they are likely to interact with each other. Whereas if they don't interact with any common proteins maybe the interaction is a false positive. 
+<PPIPruningLow/>
+<PPIPruningHigh/>
+
+##### 2. Filtering
+Next certain types of proteins in the network are identified based on the topology of the network. These proteins skew the generation of complexes, for example by bridging between 2 complexes that otherwise are unrelated. Removing these proteins makes the clusters of proteins easier to identify. Leaving just 'essential' proteins in the network.
+<PPIBridge/>
+
+##### 3. Generating a similarity matrix
+Next every protein in the network is compared with every other protein. This is done by comparing the protein sequences. Proteins whose sequences are very similar are given a high score. It is thought the more similar their sequences are, the more shared evolutionary history there is, and that can act as an indication they should be clustered together. This similarity score is generated using the [fasta algorithm](https://github.com/wrpearson/fasta36). Confusingly the dataset of protein sequences that the fasta algorithm acts on is also called fasta.
+
+##### 4. Protein ranking
+Using the similariy matrix the proteins are then ranked using pagerank. This is the original ranking algorithm developed by Google for webpages. Rather than backlinks and forward links the simlarity scores are used.
+<PPIPagerank/>
+
+##### 5. Complex detection
+Finally protein complexes are generated using a greedy algorithm starting with the highest ranked protein identified by pagerank.
+
+### Results
+
+To determine the accuracy of generated complexes they were compared to the complexes found through manual experiementation. Despite using a more modern set of reference complexes my implementation still identified a very similar number of complexes using the same threshold values, however as the CYC2008 contains many more reference complexes than the MIPS dataset used in the original paper the recall was much lower.
+
+<Table data={{
+  headers: ['Metric', 'Original Paper', 'My Implementation'],
+  rows: [
+    ['Matched Complexes', '57', '51'],
+    ['Recall', '0.7', '0.12']
+  ]
+}} />
+
+
+
+
+

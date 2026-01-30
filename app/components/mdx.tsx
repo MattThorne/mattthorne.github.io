@@ -4,15 +4,19 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import { highlight } from 'sugar-high'
 import React from 'react'
 import LCDGraph from './three-components/lcd-graph'
+import PPIPruningLow from './three-components/prorank/ppi-pruning-low'
+import PPIPruningHigh from './three-components/prorank/ppi-pruning-high'
+import PPIBridge from './three-components/prorank/ppi-bridge'
+import PPIPagerank from './three-components/prorank/ppi-pagerank'
 
 function Table({ data }) {
   let headers = data.headers.map((header, index) => (
-    <th key={index}>{header}</th>
+    <th key={index} className="text-left px-4">{header}</th>
   ))
   let rows = data.rows.map((row, index) => (
     <tr key={index}>
       {row.map((cell, cellIndex) => (
-        <td key={cellIndex}>{cell}</td>
+        <td key={cellIndex} className=" px-4">{cell}</td>
       ))}
     </tr>
   ))
@@ -98,7 +102,11 @@ let components = {
   a: CustomLink,
   code: Code,
   Table,
-  LCDGraph
+  LCDGraph,
+  PPIPruningLow,
+  PPIPruningHigh,
+  PPIBridge,
+  PPIPagerank
 }
 
 export function CustomMDX(props) {
