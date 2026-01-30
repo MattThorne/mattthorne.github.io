@@ -11,12 +11,12 @@ import PPIPagerank from './three-components/prorank/ppi-pagerank'
 
 function Table({ data }) {
   let headers = data.headers.map((header, index) => (
-    <th key={index}>{header}</th>
+    <th key={index} className="text-left px-4">{header}</th>
   ))
   let rows = data.rows.map((row, index) => (
     <tr key={index}>
       {row.map((cell, cellIndex) => (
-        <td key={cellIndex}>{cell}</td>
+        <td key={cellIndex} className=" px-4">{cell}</td>
       ))}
     </tr>
   ))
