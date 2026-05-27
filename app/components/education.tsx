@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { formatDate, getWorkEducation } from 'app/work/utils'
+import { formatDate, getWorkEducation } from 'app/resume/utils'
 
 export function Education() {
     let allProjects = getWorkEducation()
@@ -19,7 +19,7 @@ export function Education() {
                     // <Link
                     //     key={project.slug}
                     //     className="flex flex-col space-y-1 mb-4"
-                    //     href={`/work/${project.slug}`}
+                    //     href={`/resume/${project.slug}`}
                     // >
                     <div key={project.slug} className="w-full space-x-0 flex flex-col space-y-0 mb-2">
                         <p className="text-2xl text-neutral-600 dark:text-neutral-300 tracking-tight hover:text-neutral-800 dark:hover:text-neutral-100">

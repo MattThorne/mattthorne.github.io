@@ -53,20 +53,20 @@ function getMDXData(dir) {
 }
 
 export function getWorkJobs() {
-  return getMDXData(path.join(process.cwd(), 'app', 'work', 'jobs'))
+  return getMDXData(path.join(process.cwd(), 'app', 'resume', 'jobs'))
 }
 
 export function getWorkFreelance() {
-  return getMDXData(path.join(process.cwd(), 'app', 'work', 'freelance'))
+  return getMDXData(path.join(process.cwd(), 'app', 'resume', 'freelance'))
 }
 export function getWorkOpensource() {
-  return getMDXData(path.join(process.cwd(), 'app', 'work', 'opensource'))
+  return getMDXData(path.join(process.cwd(), 'app', 'resume', 'opensource'))
 }
 export function getWorkEducation() {
-  return getMDXData(path.join(process.cwd(), 'app', 'work', 'education'))
+  return getMDXData(path.join(process.cwd(), 'app', 'resume', 'education'))
 }
 export function getWorkSideProjects() {
-  return getMDXData(path.join(process.cwd(), 'app', 'work', 'projects'))
+  return getMDXData(path.join(process.cwd(), 'app', 'resume', 'projects'))
 }
 
 export function formatDate(date: string, includeRelative = false) {

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getWorkSideProjects } from 'app/work/utils'
+import { getWorkSideProjects } from 'app/resume/utils'
 
 export function SideProjects() {
     let allProjects = getWorkSideProjects()

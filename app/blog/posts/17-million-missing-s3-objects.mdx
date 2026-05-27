@@ -1,7 +1,7 @@
 ---
 title: 'What Happened to 17 Million S3 Objects?'
 publishedAt: '2025-04-11'
-summary: 'Debugging an S3 migration that mysteriously dropped 17 million objects'
+summary: 'Debugging an S3 migration that dropped 17 million objects'
 ---
 
 Last week, I migrated an S3 bucket from one AWS region to another. The original bucket held 174 million objects and around 18TB of data. To set up the migration, I created a new S3 bucket in the target region, configured live replication, then  triggered a Batch Operation to copy all existing objects to the new bucket. That’s when things got strange.
