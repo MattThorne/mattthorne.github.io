@@ -6,22 +6,22 @@ import { SideProjects } from 'app/components/projects'
 
 // TODO sort out OG image for work page
 export const metadata = {
-  title: 'Work',
+  title: 'Resume',
   description: 'See my recent work.',
 }
 
 export default function Page() {
   return (
     <section>
-      <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Work</h1>
+      <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Resume</h1>
 
-      <h2 className="font-semibold text-3xl tracking-tighter">Jobs</h2>
+      <h2 className="font-semibold text-3xl tracking-tighter">Experience</h2>
       <hr className=""></hr>
       <Jobs />
 
-      <h2 className="font-semibold mt-8 text-3xl tracking-tighter">Freelance</h2>
+      {/* <h2 className="font-semibold mt-8 text-3xl tracking-tighter">Freelance</h2>
       <hr className=""></hr>
-      <Freelance />
+      <Freelance /> */}
 
       <h2 className="font-semibold text-3xl mt-8 tracking-tighter">Open Source</h2>
       <hr className=""></hr>

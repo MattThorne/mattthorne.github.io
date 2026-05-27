@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
-import { formatDate, getWorkJobs } from 'app/work/utils'
+import { formatDate, getWorkJobs } from 'app/resume/utils'
 import { baseUrl } from 'app/sitemap'
 
 export async function generateStaticParams() {

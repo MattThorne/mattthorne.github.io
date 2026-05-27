@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getWorkOpensource } from 'app/work/utils'
+import { getWorkOpensource } from 'app/resume/utils'
 
 export function Opensource() {
     let allProjects = getWorkOpensource()
