@@ -1,0 +1,92 @@
+---
+title: 'Migrating to Aurora Postgres'
+publishedAt: '2026-05-27'
+summary: 'Migrating 19 clusters from Postgres to Aurora Postgres'
+---
+
+Over the past year I have migrated 19 database clusters from RDS Postgres to Aurora Postgres. The largest handles 150k commits per second and holds over 20TB of data. AWS documents the migration process well, as well as the advantages of Aurora. But, below are the things that might have been useful to know before hand that I havn't seen well documented elsewhere.
+
+## Why Aurora?
+
+Most of Aurora's advantages stem from its shared storage architecture. Instead of every instance in the cluster holding its own copy of the data, every instance reads from a single shared volume. That cuts replica lag dramatically and lifts the cap on IOPS well above what a single EBS volume can sustain.
+
+Aurora also has some nice features that RDS Postgres doesn't have. The most useful is the bulit in custom endpoints, which let you point a DNS name at a subset of instances and add or remove members without dropping connections. That makes parameter changes, instance rotations, and scaling uneventful.
+
+Moving to Aurora opens the door to Aurora Serverless. Several of our workloads have high load during the day, but idle at night, so the managed autoscaling saves on cost and overhead.
+
+## The Migration Process
+
+The [migration path AWS recommends](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Migrating.RDSPostgreSQL.Replica.html#AuroraPostgreSQL.Migrating.RDSPostgreSQL.Replica.Create) is straightwforward:
+
+1. Create an Aurora Read Replica attached to the existing Postgres cluster
+2. Stop all traffic to the cluster
+3. Promote the Aurora Read Replica to a standalone cluster
+4. Repoint all traffic at the new Aurora cluster
+5. Resume traffic
+
+For larger clusters extra consideration was needed. 
+
+### Creating the Aurora Read Replica
+
+Replica creation time grows with database size. Clusters under 100GB finished in under 30 minutes. Our 20TB cluster took nearly four days. The process is intensive, it uses some sort of bespoke logical replication mechanism to copy the data to the new cluster. On our larger clusters it visibly impacted the source.
+
+The size of WAL files also needs to be considered. From the moment you kick off replica creation, the source instance starts holding WAL files until they have been applied to the new Aurora replica. On our largest cluster that peaked at almost 4TB of additional storage. We had to expand the source cluster's storage to accommodate it. If you are tight on disk, plan that expansion in advance.
+
+### Validating Before Cutover
+
+Once created, the Aurora Read Replica behaves like a normal replica on the source cluster, so you can route a portion of read traffic to it and validate your workloads. Replication lag is noticeable though so you should be careful with anything sensitive to read-after-write logic.
+
+There are two limitations with the Aurora replica that made this phase more painful than it needed to be:
+
+- **Custom endpoints aren't available pre-promotion.** Being able to provision the eventual endpoints up front would let clients warm DNS and connection pools ahead of cutover and save time during the downtime window.
+- **You only get one Aurora Read Replica.** With multiple replicas we could have shifted the bulk of our read traffic before promotion. With one, we could only validate a small slice.
+
+### Cutover and Downtime
+
+Promotion itself takes just under two minutes. For simple clusters with a handful of consumers, the total downtime can be kept to a few minutes. For complex ones it is dominated by everything that has to be repointed and re-validated around the database. All workloads need updating to point to the new endpoints or custom endpoints. Our largest cluster needed roughly a four hour outage to cut over safely.
+
+That cluster also feeds downstream systems via AWS DMS using logical replication. We paused the DMS tasks before the cutover, updated their source endpoint to the new Aurora cluster, and resumed them. DMS picked up exactly where it left off with no data loss.
+
+## Performance and Tuning
+
+### Shared Buffers
+
+The biggest single difference was around `shared_buffers`. Aurora has no filesystem cache underneath it, so the database-level cache is the only cache between the instance and the shared storage layer. With Postgres-sized `shared_buffers` Aurora performed worse than RDS Postgres because every miss became a network round-trip. Increasing `shared_buffers` significantly brought performance back in line with, and then above, RDS. In fairness AWS do document this, but it was easy to miss.
+
+### IO-Optimized
+
+From the AWS docs IO-Optimized appears to be just a billing change. But it must be a physical infrastructure change behind the scenes. Aswell as a >50% cost reduction we also saw around a 10% improvement in write commit latency, so AWS clearly change something on the networking.
+
+### Long-Running Queries
+
+Aurora is more aggressive about cancelling long-running queries that conflict with the storage layer, so we found some queries that ran fine on RDS can get terminated.
+
+Also, with the parameter `hot_standby_feedback` set to on, long-running reader queries prevent vacuum from cleaning up rows on the writer, which leads to table bloat. See [pganalyze E29](https://pganalyze.com/blog/5mins-postgres-lock-conflicts-amazon-aurora-max-standby-streaming-delay-hot-standby-feedback) for the trade-off with `max_standby_streaming_delay`.
+
+### SLRU caches
+
+SLRUs are small fixed-size caches Postgres uses for transaction metadata (subtransactions, multixact offsets and members, the commit log, etc.), separate from `shared_buffers`. Under high concurrency the defaults are easy to overflow, and every miss has to go back to storage — which on Aurora is a network round-trip rather than a local disk read, so the impact is larger. We saw this as `LWLock:MultiXactOffsetSLRU` and `IO:SLRURead` wait events in Performance Insights, and resolved it by increasing `multixact_offset_buffers` and `multixact_member_buffers`.
+
+## Operational Differences
+
+### Mixed Instance Sizes
+
+With RDS Postgres, mixing instance sizes was difficult because smaller replicas couldn't apply WAL fast enough and would fall behind. With Aurora's shared storage there is no WAL replay on readers, so smaller reader instances can sit alongside a larger writer without accumulating lag. This let us run cheaper reader pools for lighter query workloads.
+
+### Replica Lag
+
+Replica lag was around 10x smaller than RDS Postgres but not zero. It mostly comes from caches needing to update on each reader after a write. After migration we tried shifting more of our read workloads onto the readers, but logic that did reads immediately after a write still hit issues from the residual lag, so workloads still need to account for it.
+
+### Custom Endpoints
+
+Custom endpoints are extremly useful. We have custom endpoints for each of our different workloads. Allowing us to scale up readers for particular workloads as needed without any impact. It also allows easy rotation of intances for example to tune parameters or to rezise and apply security patches.
+
+
+### Unreliable Metrics
+
+One negative of Aurora is the metrics. We are finding they are less reliable for us than RDS Postgres. Sometimes metrics from an instance just stop for a few minutes, this would trigger our alarms which monitor these metrics. We had to switch alarms to treat missing data as not-breaching to stop us being alarmed when metrics were missing.
+
+## Was It Worth It?
+
+For our workloads, yes. On our largest cluster I have been able to halve the instance size, and enabling IO-Optimized more than halved our monthly bill on top of that. We also have better write latency and tighter replica lag, and custom endpoints have become something we rely on for routine operations.
+  
